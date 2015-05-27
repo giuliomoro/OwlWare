@@ -115,7 +115,7 @@ void Retuner::init(int fsamp, float **fourPointers){
     // fftwf_execute_dft_r2c (_fwdplan, _fftTwind, _fftFdata);    
     transform.fft(_fftTwind, _fftFdata);
     h = _fftlen / 2;
-    for (i = 0; i < h; i++)
+    for (i = 0; i < h; i+=2)
     {
         x = _fftFdata [i];
         y = _fftFdata [i+1];
@@ -124,8 +124,8 @@ void Retuner::init(int fsamp, float **fourPointers){
         _fftFdata [i] = x * x + y * y;
         _fftFdata [i+1] = 0;
     }
-    _fftFdata [h] = 0;
-    _fftFdata [h+1] = 0;
+    // _fftFdata [h] = 0;
+    // _fftFdata [h+1] = 0;
     // fftwf_execute_dft_c2r (_invplan, _fftFdata, _fftWcorr);    
     transform.ifft(_fftFdata, _fftWcorr); //note that this rescales while the fftw call did not. TODO: implement FastFourierTransform c2r method without rescaling
     t = _fftWcorr [0];
@@ -158,11 +158,11 @@ Retuner::~Retuner (void)
 }
 
 
-int Retuner::process (int nfram, float *inp, float *out)
+int Retuner::process (int nsamples, float *inp, float *out)
 {
     int    i, k, fi;
     float  ph, dp, r1, r2, dr, u1, u2, v;
-
+    int nfram=nsamples/_frsize;
     // Pitch shifting is done by resampling the input at the
     // required ratio, and eventually jumping forward or back
     // by one or more pitch period(s). Processing is done in
@@ -351,7 +351,7 @@ void Retuner::findcycle (void)
     // fftwf_execute_dft_r2c (_fwdplan, _fftTdata, _fftFdata);    
     transform.fft(_fftTdata, _fftFdata);
     f = _fsamp / (_fftlen * 3e3f);
-    for (i = 0; i < h; i++)
+    for (i = 0; i < h; i+=2)
     {
         x = _fftFdata [i];
         y = _fftFdata [i+1];
@@ -359,8 +359,8 @@ void Retuner::findcycle (void)
         _fftFdata [i] = (x * x + y * y) / (1 + m * m);
         _fftFdata [i+1] = 0;
     }
-    _fftFdata [h] = 0;
-    _fftFdata [h+1] = 0;
+    // _fftFdata [h] = 0;
+    // _fftFdata [h+1] = 0;
     // fftwf_execute_dft_c2r (_invplan, _fftFdata, _fftTdata);    
     transform.ifft(_fftFdata, _fftTdata); // this does rescale while the fftw did not
     for(int n=0; n<_fftlen; n++) _fftTdata[n]*=_fftlen;//compensate for the rescale above 
