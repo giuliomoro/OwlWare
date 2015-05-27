@@ -1,22 +1,10 @@
-TEMPLATEROOT = .
+  TEMPLATEROOT = .
 
-ifndef CONFIG
-  CONFIG=Debug
-endif
-
-ifeq ($(CONFIG),Debug)
-CFLAGS = -g -Wall -Wcpp
-ASFLAGS  = -g
-endif
-
-ifeq ($(CONFIG),Release)
-CFLAGS   = -O2
-endif
-
-CFLAGS  += -D__FPU_PRESENT=1 -D__FPU_USED=1 -DUSE_FULL_ASSERT
-CFLAGS  += -DEXTERNAL_SRAM 
+# CFLAGS = -g -Wall -Wcpp -DUSE_FULL_ASSERT -D__FPU_PRESENT=1 -D__FPU_USED=1
+CFLAGS   = -O2 -Wall -Wcpp -DUSE_FULL_ASSERT -D__FPU_PRESENT=1 -D__FPU_USED=1
+CFLAGS  += -DEXTERNAL_SRAM
 CXXFLAGS = -fno-rtti -fno-exceptions -std=c++11 $(CFLAGS) 
-CFLAGS  += -std=gnu99
+ASFLAGS  = -g
 LDLIBS   = -lm
 LDSCRIPT = Source/flash.ld
 
@@ -26,12 +14,11 @@ C_SRC += usbd_desc.c usb_bsp.c usbd_usr.c
 C_SRC += usbd_audio_core.c 
 C_SRC += armcontrol.c usbcontrol.c owlcontrol.c midicontrol.c eepromcontrol.c
 C_SRC += clock.c operators.c serial.c gpio.c sysex.c
-C_SRC += sramalloc.c
 
 CPP_SRC  = StompBox.cpp Owl.cpp CodecController.cpp MidiController.cpp PatchController.cpp ApplicationSettings.cpp
 CPP_SRC += PatchProcessor.cpp PatchRegistry.cpp
 
-OBJS = $(C_SRC:%.c=Build/%.o) $(CPP_SRC:%.cpp=Build/%.o)
+OBJS =  $(C_SRC:%.c=Build/%.o)  $(CPP_SRC:%.cpp=Build/%.o)
 
 # object files
 OBJS += $(PERIPH) 
@@ -40,8 +27,17 @@ OBJS += $(USB_DEVICE) $(USB_OTG)
 OBJS += $(SYSCALLS)
 OBJS += $(DSPLIB)/FastMathFunctions/arm_sin_f32.o
 OBJS += $(DSPLIB)/FastMathFunctions/arm_cos_f32.o
-OBJS += $(DSPLIB)/FilteringFunctions/arm_biquad_cascade_df1_f32.o
-OBJS += $(DSPLIB)/FilteringFunctions/arm_biquad_cascade_df1_init_f32.o
+
+OBJS += # $(BUILD)/stm32f4xx_gpio.o $(BUILD)/stm32f4xx_rcc.o
+
+OBJS += $(DSPLIB)/TransformFunctions/arm_cfft_f32.o
+OBJS += $(DSPLIB)/TransformFunctions/arm_cfft_radix8_f32.o
+OBJS += $(DSPLIB)/TransformFunctions/arm_bitreversal2.o
+OBJS += $(DSPLIB)/TransformFunctions/arm_rfft_fast_f32.o
+OBJS += $(DSPLIB)/TransformFunctions/arm_rfft_fast_init_f32.o
+OBJS += $(DSPLIB)/CommonTables/arm_common_tables.o
+OBJS += $(DSPLIB)/CommonTables/arm_const_structs.o
+OBJS += Libraries/OwlPatches/retuner.o
 # OBJS += $(DSPLIB)/SupportFunctions/arm_float_to_q31.o
 # OBJS += $(DSPLIB)/SupportFunctions/arm_q31_to_float.o
 # OBJS += $(DSPLIB)/SupportFunctions/arm_float_to_q15.o
