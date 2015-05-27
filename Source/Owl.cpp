@@ -112,7 +112,7 @@ void run(){
       clearPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
 #endif
 #ifdef DEBUG_DWT
-      dwt_count = *DWT_CYCCNT;
+      dwt_count = (*DWT_CYCCNT + dwt_count)>>1;
 #endif
     }
   }
